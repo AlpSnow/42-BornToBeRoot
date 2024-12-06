@@ -1,0 +1,261 @@
+su                              --> se mettre en root (administrateur)
+sudo reboot                     --> reboot la machine virtuelle
+sudo shutdown -h now            --> fermer machine virtuelle (-h pour le temps)
+sudo -V                         --> voir la version de sudo
+
+sudo -V                         --> voir version de sudo
+sudo -V > file.txt              --> mettre les infos de la version de sudo dans un fichier file.txt
+
+sudo adduser <login>            --> ajouter un utilisateur
+sudo addgroup user42            --> ajouter un groupe (ici user42)
+cat /etc/group                  --> afficher tout les groupes
+getent group <groupname>        --> afficher un groupe en particulier
+sudo adduser <user> <groupname> --> ajouter utilisateur a un groupe
+
+groups <name>                   --> voir tout les groupes de la personne (root, mwallis)
+
+sudo apt install <name>         --> installer programme
+sudo service ssh status         --> voir le status de ssh
+
+---------------------------------------------------------------------------
+
+Secure Shell (SSH) est un protocole de communication sécurisé. Le protocole de connexion impose un échange de clés de chiffrement en début de connexion. Par la suite, tous les segments TCP sont authentifiés et chiffrés. Il devient donc impossible d'utiliser un analyseur de paquets (sniffer) pour voir ce que fait l'utilisateur. 
+
+editer pour ssh :
+vim /etc/ssh/sshd_config  (le serveur)
+vim /etc/ssh/ssh_config   (le client)
+
+---------------------------------------------------------------------------
+
+Uncomplicated Firewall (UFW) est un programme informatique pour gérer un pare-feu netfilter.
+
+sudo ufw enable                 --> demarrer le pare-feu
+
+sudo ufw allow 4242             --> autoriser notre pare-feu à accepter les connexions qui se produisent dans le port 4242.
+sudo ufw status                 --> controller l'etat actuel de notre pare-feu
+
+sudo ufw status numbered        --> voir les ports avec leurs ID
+sudo ufw delete <nombre>        --> supprimer le port
+
+---------------------------------------------------------------------------
+
+vim /etc/sudoers.d/sudo_config  --> voir/modifier notre fichier de config
+
+Defaults  passwd_tries=3                                  (Nombre total de tentatives de saisie du mot de passe sudo)
+Defaults  badpass_message="Mauvais mot de passe"          (Le message qui s'affiche lorsque le mot de passe échoue)
+Defaults  logfile="/var/log/sudo/sudo_config"             (Chemin où seront stockés les logs sudo)
+Defaults  log_input, log_output                           (Ce qui sera log)
+Defaults  iolog_dir="/var/log/sudo"                       (Ce qui sera log)
+
+Defaults  requiretty									  (la commande sudo ne peut être exécutée que depuis un terminal interactif. Cela empêche l'exécution de commandes sudo via des scripts automatisés ou des services qui n'ont pas de terminal comme certains appels à distance non interactifs. C'est une mesure de sécurité pour s'assurer que seules les sessions interactives peuvent utiliser sudo)
+
+Defaults  secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin" (Dossiers qui seront exclus de sudo)
+
+Le TTY (abréviation de "teletype") fait référence à un terminal ou une console. À l'origine, il s'agissait d'un périphérique physique pour interagir avec un ordinateur, comme une machine dactylographique connectée à un ordinateur central. Aujourd'hui, le terme est utilisé pour désigner tout type de terminal, y compris les terminaux virtuels.
+
+Un terminal (ou "TTY") est une interface utilisateur textuelle pour interagir avec le système d'exploitation. Cela inclut les consoles physiques, les terminaux virtuels (comme ceux que vous ouvrez dans une interface graphique) et les connexions à distance via SSH.
+
+- TTY physique : Il s'agit de consoles attachées directement à un ordinateur (écran, clavier, etc.), accessibles via des raccourcis comme Ctrl+Alt+F1 à Ctrl+Alt+F6 sur de nombreux systèmes Linux.
+- TTY virtuel (PTY) : Un terminal émulé dans une fenêtre graphique, comme le terminal GNOME, xterm, ou une connexion SSH.
+
+---------------------------------------------------------------------------
+
+strong password policy :
+
+vim /etc/login.defs
+(Pour modifier la duree du mdp, maximum 30 jours pour meme mdp avant expiration, minimum 2 jours avant de changer, 7 jours avant alerte)
+
+sudo apt install libpam-pwquality (pour installer fichier avec regex mdp)
+vim /etc/pam.d/common-password (on modifie ce fichier pour notre regex)
+
+minlen=10 (Le minimum de caractères qu'un mot de passe doit contenir)
+
+ucredit=-1 (Le mot de passe doit au moins contenir une lettre majuscule. Il faut l'écrire avec un signe -, car c'est ainsi qu'il sait qu'il s'agit de caractères minimaux ; si on met un signe +, il s'agira de caractères maximaux)
+
+dcredit=-1 (Le mot de passe doit au moins contenir un chiffre)
+
+lcredit=-1 (Le mot de passe doit au moins contenir une lettre minuscule)
+
+maxrepeat=3 (Le mot de passe ne peut pas avoir le même caractère répété trois fois de suite)
+
+reject_username (Le mot de passe ne peut pas contenir le nom d'utilisateur à l'intérieur de lui-même)
+
+difok=7  (Le mot de passe doit contenir au moins sept caractères différents du dernier mot de passe utilisé)
+
+enforce_for_root  (Nous appliquerons cette politique de mot de passe à root)
+
+(par default l'absence de signe est interpretee comme un maximum.)
+(ocredit pour les caracteres speciaux)
+
+
+
+sudo chage -l mwallis  (voir politique des mots de passe pour l'utilisateur)
+
+sudo chage -m 2 mwallis (modifier nombre jours minimum avant changement mdp)
+sudo chage -M <time> <username> (modifier nombre jours maximum avant changement mdp, ici 30)
+
+
+---------------------------------------------------------------------------
+
+
+Se connecter avec un terminal exterieur :
+
+ssh mwallis@localhost -p 42422   --> se connecter a mwallis de notre VM a partir d'un terminal exterieur 
+ssh mwallis@127.0.0.1 -p 42422   --> virtualbox gere la traduction pour nous mais il est possible de faire avec l'IP (ce qui se fait tout le temps)
+
+logout ou exit                  --> se deconnecter
+
+Host Port : Port utilisé sur la machine hôte (ton ordinateur physique) pour accéder à un service dans la VM.
+Le host port est le port utilisé sur la machine hôte (votre PC) pour recevoir et rediriger les connexions vers la VM.
+
+Guest Port : Port utilisé sur la machine virtuelle (système invité) pour écouter les connexions.
+Le guest port est le port utilisé à l'intérieur de la VM pour le service ou l'application que vous souhaitez atteindre.
+
+1. On exécute la commande sur la machine hôte :
+ssh mwallis@127.0.0.1 -p 42422
+
+2. VirtualBox intercepte la connexion à 127.0.0.1:42422 sur la machine hôte.
+3. VirtualBox redirige cette connexion au port 4242 à l'intérieur de la VM.
+4. Si un service (par exemple, SSH) écoute sur le port 4242 dans la VM, la connexion est établie.
+
+Pour le fun, se connecter a la VM de chouaib :
+ssh cnamoune@127.0.0.1 -p 42422
+(attention le port doit etre configure dans virtualbox)
+(ne fonctionnera pas a cause de la cle SSH perso, on pourra se co et demander le mdp mais l'acces sera refuse)
+
+
+---------------------------------------------------------------------------
+
+
+script = Il s'agit d'une séquence de commandes stockées dans un fichier qui, lorsqu'elles sont exécutées, remplissent la fonction de chaque commande.
+
+-----------
+
+uname -a = Cette commande permet d'afficher toutes les informations, sauf si le processeur n'est pas connu ou si le matériel de la plateforme est inconnu.
+
+-----------
+
+grep "physical id" /proc/cpuinfo | wc -l = Pour afficher le nombre de cœurs physiques
+
+Le fichier /proc/cpuinfo contient des informations détaillées sur tous les processeurs détectés par le système, tels que leurs caractéristiques, leurs fréquences, et d'autres métadonnées.
+La valeur associée à "physical id" indique l'identifiant d'un processeur physique (socket). Si vous avez un processeur multicœur, chaque cœur partage le même "physical id".
+wc -l compte le nombre de lignes dans la sortie de grep. Cela revient à compter le nombre d'entrées correspondant à "physical id".
+
+grep processor /proc/cpuinfo | wc -l = Pour afficher le nombre de cœurs virtuels 
+
+Cœur physique : Une véritable unité matérielle capable d'exécuter des instructions indépendamment.
+
+Caractéristiques :
+
+    Composé de transistors et de circuits électroniques.
+    Capable d'exécuter des instructions indépendamment.
+    Chaque cœur dispose de ses propres ressources matérielles, comme des unités d'exécution (ALU, FPU), des registres, et parfois une mémoire cache dédiée.
+
+Fonctionnement :
+
+    Un processeur multicœur (comme un processeur à 4 cœurs) dispose de plusieurs unités physiques capables de traiter des instructions simultanément.
+    Ces cœurs augmentent les performances en répartissant les tâches parallèles entre eux.
+
+
+Cœur virtuel : Une unité logique qui optimise l'utilisation d'un cœur physique en exécutant plusieurs threads simultanément grâce au partage des ressources matérielles.
+
+Caractéristiques :
+
+    Un cœur physique est capable de créer deux (ou plus) cœurs virtuels.
+    Les cœurs virtuels partagent les ressources matérielles du cœur physique (comme les unités d'exécution).
+
+Fonctionnement :
+
+    Les cœurs virtuels permettent à un seul cœur physique d'exécuter plusieurs threads de manière quasi simultanée.
+    Cela optimise l'utilisation des ressources matérielles lorsque certaines unités du cœur sont sous-utilisées.
+
+-----------
+
+free = affiche la ram
+free --mega = affiche la ram en megaoctet
+free --mega | awk '$1 == "Mem:"' = affiche la ligne Mem:
+free --mega | awk '$1 == "Mem:" {print $3}' = affiche la 3eme colonne de Mem:
+
+free --mega | awk '$1 == "Mem:" {printf("(%.2f%%)\n", $3/$2*100)}' %f = affiche avec tout les chiffres apres la virgule, %.2f = affiche 2 chiffres apres la virgule
+
+-----------
+
+df -m | grep "/dev/" | grep -v "/boot" | awk '{memory_use += $3} END {print memory_use}'
+La commande df affiche des informations sur l'espace disque utilisé et disponible pour tous les systèmes de fichiers montés.
+L'option -m affiche ces informations en mégaoctets.
+
+grep = cherche ligne
+grep -a = cherche ligne non sensible a la casse (apple, Apple)
+grep -v = cherche ligne ne contenant pas
+
+memory_use = variable qui additionne colone 3
+
+-----------
+
+vmstat 1 4 | tail -1 | awk '{print $15}'
+
+La commande vmstat affiche des statistiques système, notamment sur l'utilisation du CPU, de la mémoire, des entrées/sorties, et des processus.
+
+1 4 = va faire l'insctruction 4 fois
+
+tail -1 = obtenir uniquement la derniere ligne
+
+15 ligne = inactiviter du processeur
+
+-----------
+
+who -b | awk '$1 == "system" {print $3 " " $4 " " $5}'
+La commande who affiche des informations sur les utilisateurs connectés et le système.
+L'option -b (ou --boot) affiche uniquement l'heure et la date du dernier redémarrage du système.
+
+'$1 == "system" = on dit que notre premiere colonne est system
+
+print $3 " " $4 imprime la date et le jour séparées par un espace.
+
+
+Si jamais pour l'annee :
+uptime -s | cut -d: -f1,2
+
+
+-----------
+
+if [ $(lsblk | grep "lvm" | wc -l) -gt 0 ]; then echo yes; else echo no; fi
+
+La commande lsblk (list block devices) affiche des informations sur les périphériques de stockage et leurs partitions.
+gt -0 Vérifie si le résultat de la sous-commande (le nombre de volumes logiques) est supérieur à 0.
+
+ceci fonctionnerait aussi :
+if lsblk | grep -q "lvm"; then echo yes; else echo no; fi
+
+LVM, ou Logical Volume Manager, est un système de gestion de volumes logiques utilisé dans les systèmes d'exploitation Unix/Linux. Il offre une méthode flexible et puissante pour gérer les périphériques de stockage tels que les disques durs et leurs partitions.
+
+-----------
+
+ss -ta | grep ESTAB | wc -l
+
+Cette commande est utilisée pour compter le nombre de connexions réseau établies (ESTABLISHED) sur le système.
+
+La commande ss (socket statistics) est utilisée pour afficher des informations sur les sockets réseau.
+
+    Options :
+        -t : Filtre uniquement les connexions TCP.
+        -a : Affiche toutes les connexions, y compris celles en écoute (LISTEN).
+
+Une connexion TCP (Transmission Control Protocol) est une communication réseau entre deux appareils qui utilisent le protocole TCP. Ce protocole est largement utilisé sur Internet et les réseaux locaux car il offre une communication fiable et organisée entre les appareils.
+
+-----------
+
+users | wc -w
+
+wc = word count et -w = word
+
+------------------------------------
+
+sudo crontab -u root -e
+
+
+------------------------------------
+
+shasum born2beroot.vdi   = pour voir la signature depuis /media/mwallis/USB/vm/born2beroot
+
+AppArmor est un outil puissant pour améliorer la sécurité des systèmes Linux en appliquant des restrictions spécifiques aux applications. Il est plus facile à utiliser que des alternatives comme SELinux, tout en offrant une bonne flexibilité et une surveillance proactive des comportements des applications.
